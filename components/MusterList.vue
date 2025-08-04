@@ -1,10 +1,10 @@
 <template>
-  <div>
+  <div class="m-4 mb-12 overflow-x-auto">
     <UTable
       :data="data"
       :columns="columns"
       :sorting="sorting"
-      class="m-4 mb-12"
+      class="min-w-[720px] whitespace-nowrap"
     />
   </div>
 </template>

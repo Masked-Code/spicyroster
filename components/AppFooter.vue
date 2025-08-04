@@ -19,6 +19,7 @@
     font-family: Arial, sans-serif;
     position: fixed;
     bottom: 0;
+    z-index: 1000;
 }
 .footer-card {
     margin: 2rem;

@@ -2,7 +2,7 @@
     <div class="header">
         <UCard class="header-card">
             <div class="flex flex-row text-center items-center justify-center">
-                <div class="text-4xl font-bold text-primary">🔥 SPICY ROSTER 📃</div>
+                <div class="whitespace-nowrap text-2xl sm:text-3xl md:text-4xl font-bold text-primary leading-tight">🔥 SPICY ROSTER 📃</div>
             </div>
         </UCard>
     </div>
