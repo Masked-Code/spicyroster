@@ -3,7 +3,7 @@
     <UCard class="m-4 mb-38">
       <div class="text-2xl text-primary font-bold m-6">Sailor Muster Input</div>
       <MusterInput @muster-submitted="refreshList" />
-      <USeparator class="m-4" size="lg"/>
+      <USeparator class="m-4" size="lg" />
       <div class="text-2xl text-primary font-bold m-6">Today's Muster List</div>
       <MusterList ref="musterList" />
     </UCard>
@@ -22,5 +22,4 @@ function refreshList() {
     musterList.value?.fetchMusters()
   }, 100)
 }
-
 </script>

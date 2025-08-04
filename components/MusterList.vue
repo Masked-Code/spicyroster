@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, h } from 'vue'
 import type { TableColumn } from '#ui/types'
 import type { SortingState } from '@tanstack/vue-table'
 
@@ -33,7 +33,15 @@ interface Person {
 }
 
 const columns: TableColumn<TableRow, unknown>[] = [
-  { accessorKey: 'sailor',   header: 'Sailor' },
+  {
+    accessorKey: 'sailor',
+    header: 'Sailor',
+    cell: ({ row, getValue }) => {
+      const status = (row.getValue?.('status') as string) ?? row.original.status
+      const cls = status?.includes('✅') ? 'text-primary' : ''
+      return h('span', { class: cls }, getValue() as string)
+    }
+  },
   { accessorKey: 'location', header: 'Location' },
   { accessorKey: 'time',     header: 'Time' },
   { accessorKey: 'status',   header: 'Status' },
@@ -56,15 +64,20 @@ async function fetchMusters() {
     data.value = expectedPeople.map((person: Person) => {
       const entry = musters.value.find((m) => m.name === person.name)
       return {
-        sailor: `${person.title} ${person.name}`,     // ✅ "<RANK> <NAME>"
+        sailor: `${person.title} ${person.name}`,
         location: entry?.location ?? '—',
         time: entry?.time ?? '—',
         status: entry ? '✅ Mustered' : '❌ Not Mustered'
       }
     })
-  } catch (err) {
-    console.error('Error fetching muster data:', err)
-    data.value = []
+  } catch (err: any) {
+    console.error('GET /api/muster failed:', err?.data ?? err)
+    data.value = expectedPeople.map((person: Person) => ({
+      sailor: `${person.title} ${person.name}`,
+      location: '—',
+      time: '—',
+      status: '❌ Not Mustered'
+    }))
   }
 }
 

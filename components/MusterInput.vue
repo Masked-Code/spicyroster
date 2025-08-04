@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleFormSubmit"  class="flex items-center flex-wrap">
+  <form @submit.prevent="handleFormSubmit" class="flex items-center flex-wrap">
     <UInputMenu
       v-model="name"
       :items="people"
@@ -10,8 +10,21 @@
       size="xl"
       placeholder="Sailor's Name"
     />
-    <UInput type="text" v-model="location" placeholder="Location" required class="m-4 text-xl" size="xl"/>
-    <UInput type="time" v-model="time" required class="m-4 text-xl" size="xl"/>
+    <UInput
+      type="text"
+      v-model="location"
+      placeholder="Location"
+      required
+      class="m-4 text-xl"
+      size="xl"
+    />
+    <UInput
+      type="time"
+      v-model="time"
+      required
+      class="m-4 text-xl"
+      size="xl"
+    />
     <UButton type="submit" class="m-4 text-xl" size="xl">Muster</UButton>
   </form>
 </template>
@@ -25,19 +38,23 @@ const emit = defineEmits(['muster-submitted'])
 const people = useExpectedPersonnel().map(p => p.name)
 
 async function handleFormSubmit() {
-  await $fetch('/api/muster', {
-    method: 'POST',
-    body: {
-      name: name.value,
-      location: location.value,
-      time: time.value
-    }
-  })
+  try {
+    await $fetch('/api/muster', {
+      method: 'POST',
+      body: {
+        name: name.value,
+        location: location.value,
+        time: time.value
+      }
+    })
 
-  name.value = ''
-  location.value = ''
-  time.value = ''
+    name.value = ''
+    location.value = ''
+    time.value = ''
 
-  emit('muster-submitted')
+    emit('muster-submitted')
+  } catch (err: any) {
+    console.error('POST /api/muster failed:', err?.data ?? err)
+  }
 }
 </script>
