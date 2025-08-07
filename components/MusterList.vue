@@ -27,6 +27,15 @@ interface MusterEntry {
   time: string
 }
 
+interface LeaveEntry {
+  id: string
+  name: string
+  startDate: string
+  endDate: string
+  leaveType: string
+  createdAt: string
+}
+
 interface Person {
   name: string
   title: string
@@ -38,7 +47,9 @@ const columns: TableColumn<TableRow, unknown>[] = [
     header: 'Sailor',
     cell: ({ row, getValue }) => {
       const status = (row.getValue?.('status') as string) ?? row.original.status
-      const cls = status?.includes('✅') ? 'text-primary' : ''
+      let cls = ''
+      if (status?.includes('✅')) cls = 'text-primary'
+      else if (status?.includes('🏖️')) cls = 'text-blue-600'
       return h('span', { class: cls }, getValue() as string)
     }
   },
@@ -58,11 +69,30 @@ const data = ref<TableRow[]>([])
 async function fetchMusters() {
   const today = new Date().toISOString().split('T')[0]
   try {
-    const result = await $fetch<MusterEntry[]>(`/api/muster/${today}`)
-    musters.value = Array.isArray(result) ? result : []
+    // Fetch both musters and leave data for today
+    const [musterResult, leaveResult] = await Promise.all([
+      $fetch<MusterEntry[]>(`/api/muster/${today}`),
+      $fetch<LeaveEntry[]>(`/api/leave/${today}`)
+    ])
+    
+    musters.value = Array.isArray(musterResult) ? musterResult : []
+    const todayLeave = Array.isArray(leaveResult) ? leaveResult : []
 
     data.value = expectedPeople.map((person: Person) => {
       const entry = musters.value.find((m) => m.name === person.name)
+      const leaveEntry = todayLeave.find((l) => l.name === person.name)
+      
+      // If person is on leave, show leave status
+      if (leaveEntry) {
+        return {
+          sailor: `${person.title} ${person.name}`,
+          location: `On ${leaveEntry.leaveType}`,
+          time: 'All Day',
+          status: '🏖️ On Leave'
+        }
+      }
+      
+      // Otherwise show normal muster status
       return {
         sailor: `${person.title} ${person.name}`,
         location: entry?.location ?? '—',
@@ -71,7 +101,7 @@ async function fetchMusters() {
       }
     })
   } catch (err: any) {
-    console.error('GET /api/muster failed:', err?.data ?? err)
+    console.error('GET /api/muster or leave failed:', err?.data ?? err)
     data.value = expectedPeople.map((person: Person) => ({
       sailor: `${person.title} ${person.name}`,
       location: '—',
