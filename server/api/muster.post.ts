@@ -1,5 +1,5 @@
-// server/api/muster.post.ts
 import { eventBus } from '../utils/eventBus'
+import { getItem, setItem } from '../utils/persistentStorage'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ name: string; location: string; time: string }>(event)
@@ -11,14 +11,12 @@ export default defineEventHandler(async (event) => {
   const date = new Date().toISOString().split('T')[0]
   const key = `muster:${date}`
 
-  const storage = useStorage()
-  const list = (await storage.getItem<Array<{ name: string; location: string; time: string }>>(key)) ?? []
+  const list = (await getItem<Array<{ name: string; location: string; time: string }>>(key)) ?? []
 
   list.push({ name: body.name, location: body.location, time: body.time })
 
-  await storage.setItem(key, list)
+  await setItem(key, list)
 
-  // Broadcast live update
   eventBus.publish('muster-updated', { date, name: body.name })
 
   return { ok: true }

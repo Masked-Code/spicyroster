@@ -1,4 +1,5 @@
-// server/api/leave.post.ts
+import { getItem, setItem } from '../utils/persistentStorage'
+
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ 
     name: string; 
@@ -11,7 +12,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Missing required fields' })
   }
 
-  // Validate dates
   const startDate = new Date(body.startDate)
   const endDate = new Date(body.endDate)
   const today = new Date()
@@ -25,9 +25,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Cannot schedule leave for past dates' })
   }
 
-  const storage = useStorage()
-  
-  // Store leave request with unique ID
   const leaveId = `${body.name}-${body.startDate}-${Date.now()}`
   const leaveKey = `leave:${leaveId}`
   
@@ -40,13 +37,12 @@ export default defineEventHandler(async (event) => {
     createdAt: new Date().toISOString()
   }
 
-  await storage.setItem(leaveKey, leaveData)
+  await setItem(leaveKey, leaveData)
   
-  // Also maintain a list of all leave requests for easier querying
   const leaveListKey = 'leave:list'
-  const leaveList = (await storage.getItem<string[]>(leaveListKey)) ?? []
+  const leaveList = (await getItem<string[]>(leaveListKey)) ?? []
   leaveList.push(leaveId)
-  await storage.setItem(leaveListKey, leaveList)
+  await setItem(leaveListKey, leaveList)
 
   return { ok: true, leaveId }
 })
