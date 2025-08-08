@@ -84,13 +84,9 @@ function getLeaveStatus(startDate: string, endDate: string): string {
   start.setHours(0, 0, 0, 0)
   end.setHours(0, 0, 0, 0)
 
-  if (today >= start && today <= end) {
-    return 'Active'
-  } else if (today < start) {
-    return 'Upcoming'
-  } else {
-    return 'Past'
-  }
+  if (today >= start && today <= end) return 'Active'
+  if (today < start) return 'Upcoming'
+  return 'Past'
 }
 
 function findPersonTitle(name: string): string {
@@ -117,14 +113,9 @@ async function fetchLeave() {
       const statusOrder = { 'Active': 0, 'Upcoming': 1, 'Past': 2 }
       const aOrder = statusOrder[a.status as keyof typeof statusOrder] ?? 3
       const bOrder = statusOrder[b.status as keyof typeof statusOrder] ?? 3
-
-      if (aOrder !== bOrder) {
-        return aOrder - bOrder
-      }
-
+      if (aOrder !== bOrder) return aOrder - bOrder
       return new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
     })
-
   } catch (err: any) {
     console.error('Failed to fetch leave data:', err?.data ?? err)
     leaveData.value = []

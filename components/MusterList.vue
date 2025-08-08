@@ -69,20 +69,19 @@ const data = ref<TableRow[]>([])
 async function fetchMusters() {
   const today = new Date().toISOString().split('T')[0]
   try {
-    // Fetch both musters and leave data for today
+    // Match current endpoints: /api/muster?date=YYYY-MM-DD and /api/leave?date=YYYY-MM-DD
     const [musterResult, leaveResult] = await Promise.all([
-      $fetch<MusterEntry[]>(`/api/muster/${today}`),
-      $fetch<LeaveEntry[]>(`/api/leave/${today}`)
+      $fetch<MusterEntry[]>('/api/muster', { params: { date: today } }),
+      $fetch<LeaveEntry[]>('/api/leave',  { params: { date: today } })
     ])
-    
+
     musters.value = Array.isArray(musterResult) ? musterResult : []
     const todayLeave = Array.isArray(leaveResult) ? leaveResult : []
 
     data.value = expectedPeople.map((person: Person) => {
       const entry = musters.value.find((m) => m.name === person.name)
       const leaveEntry = todayLeave.find((l) => l.name === person.name)
-      
-      // If person is on leave, show leave status
+
       if (leaveEntry) {
         return {
           sailor: `${person.title} ${person.name}`,
@@ -91,8 +90,7 @@ async function fetchMusters() {
           status: '🏖️ On Leave'
         }
       }
-      
-      // Otherwise show normal muster status
+
       return {
         sailor: `${person.title} ${person.name}`,
         location: entry?.location ?? '—',
@@ -101,7 +99,7 @@ async function fetchMusters() {
       }
     })
   } catch (err: any) {
-    console.error('GET /api/muster or leave failed:', err?.data ?? err)
+    console.error('GET /api/muster or /api/leave failed:', err?.data ?? err)
     data.value = expectedPeople.map((person: Person) => ({
       sailor: `${person.title} ${person.name}`,
       location: '—',
