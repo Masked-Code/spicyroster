@@ -1,3 +1,5 @@
+import { eventBus } from '../utils/eventBus'
+
 export default defineEventHandler(async (event) => {
   const body = await readBody<{
     name: string
@@ -46,6 +48,9 @@ export default defineEventHandler(async (event) => {
   list.push({ name: body.name, rank: body.rank, location: body.location, time: body.time })
 
   await storage.setItem(key, list)
+
+  // Broadcast live update
+  eventBus.publish('muster-updated', { date, name: body.name })
 
   return { ok: true, date, entry: { name: body.name, rank: body.rank, location: body.location, time: body.time } }
 })

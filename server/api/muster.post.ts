@@ -1,4 +1,6 @@
 // server/api/muster.post.ts
+import { eventBus } from '../utils/eventBus'
+
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ name: string; location: string; time: string }>(event)
 
@@ -15,6 +17,9 @@ export default defineEventHandler(async (event) => {
   list.push({ name: body.name, location: body.location, time: body.time })
 
   await storage.setItem(key, list)
+
+  // Broadcast live update
+  eventBus.publish('muster-updated', { date, name: body.name })
 
   return { ok: true }
 })

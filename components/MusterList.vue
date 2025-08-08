@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, h } from 'vue'
+import { ref, onMounted, onUnmounted, h } from 'vue'
 import type { TableColumn } from '#ui/types'
 import type { SortingState } from '@tanstack/vue-table'
 
@@ -111,6 +111,12 @@ async function fetchMusters() {
   }
 }
 
-onMounted(fetchMusters)
+onMounted(() => {
+  fetchMusters()
+  const { connect, disconnect } = useMusterLive(() => fetchMusters())
+  connect()
+  onUnmounted(disconnect)
+})
+
 defineExpose({ fetchMusters })
 </script>
